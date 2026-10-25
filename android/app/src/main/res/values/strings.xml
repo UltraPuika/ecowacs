@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Robots</string>
+    <string name="setup_title">Robota lietotnes adrese</string>
+    <string name="setup_message">Ievadiet adresi, ko jums iedeva tas, kurš uzstādīja robota lietotni. Piemēram: 192.168.1.10:8080</string>
+    <string name="setup_hint">192.168.1.10:8080</string>
+    <string name="setup_invalid">Adrese nav pareiza. Piemērs: 192.168.1.10:8080</string>
+    <string name="save">Saglabāt</string>
+    <string name="cancel">Atcelt</string>
+    <string name="error_title">Nav savienojuma</string>
+    <string name="error_message">Neizdevās atvērt robota lietotni adresē %1$s.\n\nPārbaudiet, vai tālrunis ir pievienots mājas Wi-Fi tīklam.</string>
+    <string name="retry">Mēģināt vēlreiz</string>
+    <string name="change_address">Mainīt adresi</string>
+    <string name="downloading">Lejupielādē…</string>
+    <string name="download_failed">Lejupielāde neizdevās.</string>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app talks to a Raspberry Pi on the home network over plain http://
+     (its address is entered by the user, so it cannot be listed here). -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

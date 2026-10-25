@@ -62,7 +62,8 @@ lists the checks to do on your robot.
 4. On the Pi, clone this repository, then run `cp .env.example .env`. Set
    `HA_URL`, `HA_TOKEN` and `APP_PASSWORD`.
 5. Run `docker compose up -d --build`.
-6. On the phone, open `http://<pi-ip>:8080`, log in, then use **⋮ → Add to Home screen**.
+6. On the phone, either open `http://<pi-ip>:8080` and use **⋮ → Add to Home screen**,
+   or install the **Android APK** from the GitHub Releases page ([docs/ANDROID_APP.md](docs/ANDROID_APP.md)).
 
 Full steps: [docs/INSTALL_RASPBERRY_PI.md](docs/INSTALL_RASPBERRY_PI.md).
 
@@ -108,6 +109,7 @@ REAL_HA_URL=http://192.168.1.10:8123 REAL_HA_TOKEN=... python -m pytest -m reald
 
 - [Capability audit](docs/CAPABILITY_AUDIT.md): what the X9 PRO OMNI supports, with sources
 - [Install on Raspberry Pi](docs/INSTALL_RASPBERRY_PI.md): install, update, Android PWA
+- [Android app (APK)](docs/ANDROID_APP.md): download, install, signing
 - [Home Assistant setup](docs/HOME_ASSISTANT.md)
 - [Map and carpet limitations](docs/MAP_AND_CARPET_LIMITATIONS.md)
 - [Latvian voice](docs/LATVIAN_VOICE.md)

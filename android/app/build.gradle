@@ -1,0 +1,47 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Release signing comes from environment variables (GitHub Actions secrets).
+// Without them the release APK is signed with the debug key, which is fine for
+// installing, but every new build then needs an uninstall before updating.
+def keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+def hasReleaseKey = keystorePath != null && file(keystorePath).exists()
+
+android {
+    namespace 'lv.deebot.robots'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'lv.deebot.robots'
+        minSdk 29
+        // 34, not 35: Android 15 forces edge-to-edge drawing for targetSdk 35,
+        // which would put the app's top bar under the status bar.
+        targetSdk 34
+        versionCode Integer.parseInt(System.getenv("VERSION_CODE") ?: "1")
+        versionName System.getenv("VERSION_NAME") ?: "1.0.0"
+    }
+
+    signingConfigs {
+        if (hasReleaseKey) {
+            release {
+                storeFile file(keystorePath)
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig hasReleaseKey ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
