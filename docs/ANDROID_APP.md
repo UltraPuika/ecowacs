@@ -45,6 +45,9 @@ git push origin v1.0.1
 
 The workflow builds the APK and attaches it to a GitHub release for that tag.
 
+You can also publish a release without git: on GitHub go to **Actions → Android APK →
+Run workflow**, choose the branch, enter a tag such as `v1.0.1` in **release_tag**, and click **Run workflow**.
+
 ## Stable signing (recommended)
 
 Without a release key, the APK is signed with a throw-away debug key that

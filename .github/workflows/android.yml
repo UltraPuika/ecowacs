@@ -6,6 +6,11 @@ on:
     paths: ["android/**", "frontend/public/icon.svg", ".github/workflows/android.yml"]
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Publish a GitHub release with this tag (e.g. v1.0.0). Leave empty to only build."
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -32,9 +37,13 @@ jobs:
           echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
       - name: Version
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             echo "VERSION_NAME=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          elif [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "VERSION_NAME=${RELEASE_TAG#v}" >> "$GITHUB_ENV"
           else
             echo "VERSION_NAME=1.0.${{ github.run_number }}-dev" >> "$GITHUB_ENV"
           fi
@@ -57,9 +66,12 @@ jobs:
           path: Robots-*.apk
 
       - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.release_tag || github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          name: Robots ${{ inputs.release_tag || github.ref_name }}
           files: Robots-*.apk
           body: |
             Android lietotne robota vadībai. Instalēšana: skatiet docs/ANDROID_APP.md.
