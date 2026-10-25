@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { api, ApiError } from "./api";
 import { BigButton } from "./components";
+import { Icon } from "./icons";
 import { CONNECTION, T, timeAgo } from "./lv";
 import { History } from "./pages/History";
 import { Home } from "./pages/Home";
@@ -10,10 +11,10 @@ import { useRobot } from "./useRobot";
 
 type Tab = "home" | "map" | "history" | "settings";
 const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: "home", label: T.nav.home, icon: "⌂" },
-  { id: "map", label: T.nav.map, icon: "▦" },
-  { id: "history", label: T.nav.history, icon: "☰" },
-  { id: "settings", label: T.nav.settings, icon: "⚙" },
+  { id: "home", label: T.nav.home, icon: "home" },
+  { id: "map", label: T.nav.map, icon: "map" },
+  { id: "history", label: T.nav.history, icon: "history" },
+  { id: "settings", label: T.nav.settings, icon: "settings" },
 ];
 
 function Login({ onDone }: { onDone: () => void }) {
@@ -34,6 +35,9 @@ function Login({ onDone }: { onDone: () => void }) {
   };
   return (
     <main className="login">
+      <div className="login-logo" aria-hidden="true">
+        <Icon name="robot" />
+      </div>
       <h1>{T.loginTitle}</h1>
       <form onSubmit={(e) => void submit(e)}>
         <label className="field">
@@ -110,13 +114,19 @@ export function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <h1>{robot?.robot_name ?? T.appName}</h1>
+        <div className="brand">
+          <span className="brand-logo" aria-hidden="true">
+            <Icon name="robot" />
+          </span>
+          <h1>{robot?.robot_name ?? T.appName}</h1>
+        </div>
         <span
           className={`link link-${link === "live" && robot?.backend_connected ? "live" : link}`}
           role="status"
           aria-label={`Savienojums: ${linkText}`}
         >
-          ● {linkText}
+          <span className="link-dot" aria-hidden="true" />
+          {linkText}
         </span>
       </header>
 
@@ -159,7 +169,9 @@ export function App() {
             aria-current={tab === t.id ? "page" : undefined}
             onClick={() => setTab(t.id)}
           >
-            <span className="tab-icon" aria-hidden="true">{t.icon}</span>
+            <span className="tab-icon" aria-hidden="true">
+              <Icon name={t.icon} />
+            </span>
             <span className="tab-label">{t.label}</span>
           </button>
         ))}

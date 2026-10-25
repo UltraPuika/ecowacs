@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, ApiError } from "../api";
 import { BigButton, Card, ConfirmDialog, FeedbackBox, Toggle, useCommand } from "../components";
+import { Icon } from "../icons";
 import { formatDateTime, T, timeAgo } from "../lv";
 import type { MapMeta, Status } from "../types";
 
@@ -102,8 +103,16 @@ export function MapPage({ status }: { status: Status }) {
                   aria-pressed={selected.includes(room.id)}
                   onClick={() => toggleRoom(room.id)}
                 >
-                  {selected.includes(room.id) ? "✓ " : ""}
-                  {room.name}
+                  <span className="room-mark">
+                    {selected.includes(room.id) && (
+                      <>
+                        <Icon name="check" />
+                        <span className="visually-hidden">✓</span>
+                      </>
+                    )}
+                  </span>
+                  {selected.includes(room.id) ? " " : ""}
+                  <span className="room-name">{room.name}</span>
                 </button>
               ))}
             </div>
@@ -163,7 +172,7 @@ export function MapPage({ status }: { status: Status }) {
         <BigButton
           label="Atjaunot karti"
           variant="secondary"
-          icon="↻"
+          icon="refresh"
           busy={busy === "refresh_map"}
           disabled={disabled || !caps.map}
           onClick={() => void refreshMap()}

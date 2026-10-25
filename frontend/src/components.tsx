@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { api, ApiError } from "./api";
+import { Icon } from "./icons";
 import { T } from "./lv";
 import type { CommandResult } from "./types";
 
@@ -58,7 +59,11 @@ export function FeedbackBox({ feedback }: { feedback: Feedback | null }) {
   if (!feedback) return null;
   return (
     <div className={`feedback feedback-${feedback.kind}`} role="status" aria-live="polite">
-      {feedback.kind === "pending" && <span className="spinner" aria-hidden="true" />}
+      {feedback.kind === "pending" ? (
+        <span className="spinner" aria-hidden="true" />
+      ) : (
+        <Icon name={feedback.kind === "ok" ? "check" : "alert"} className="feedback-icon" />
+      )}
       {feedback.text}
     </div>
   );
@@ -70,6 +75,7 @@ interface BigButtonProps {
   variant?: "primary" | "secondary" | "danger" | "plain";
   busy?: boolean;
   disabled?: boolean;
+  /** Name of an icon from icons.tsx (decorative, aria-hidden). */
   icon?: string;
 }
 
@@ -82,7 +88,11 @@ export function BigButton({ label, onClick, variant = "primary", busy, disabled,
       disabled={disabled || busy}
       aria-busy={busy || undefined}
     >
-      {busy ? <span className="spinner" aria-hidden="true" /> : icon && <span aria-hidden="true">{icon}</span>}
+      {busy ? (
+        <span className="spinner" aria-hidden="true" />
+      ) : (
+        icon && <Icon name={icon} className="big-button-icon" />
+      )}
       <span>{label}</span>
     </button>
   );

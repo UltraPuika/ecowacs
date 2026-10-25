@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BigButton, Card, ConfirmDialog, FeedbackBox, useCommand } from "../components";
+import { Icon } from "../icons";
 import { activityText, formatMinutes, STATION, T, timeAgo, WORK_MODE } from "../lv";
 import type { Status } from "../types";
 
@@ -18,6 +19,17 @@ const COLOR: Record<string, string> = {
   unknown: "state-unknown",
 };
 
+/** Decorative picture for the status card (purely visual, hidden from screen readers). */
+const STATE_ICON: Record<string, string> = {
+  cleaning: "robot",
+  paused: "pause",
+  returning: "home",
+  docked: "bolt",
+  idle: "check",
+  error: "alert",
+  unknown: "robot",
+};
+
 export function Home({ status, onChooseRooms }: Props) {
   const { robot, freshness, current_session } = status;
   const { run, busy, feedback } = useCommand();
@@ -32,12 +44,19 @@ export function Home({ status, onChooseRooms }: Props) {
   return (
     <div className="page">
       <Card className={`status-card ${stateClass}`}>
-        <p className="status-title" data-testid="activity">
-          {activityText(robot, rooms)}
-        </p>
-        {robot.station_state && robot.station_state !== "idle" && (
-          <p className="status-sub">{STATION[robot.station_state] ?? robot.station_state}</p>
-        )}
+        <div className="status-head">
+          <span className="status-icon" aria-hidden="true">
+            <Icon name={stateClass === "state-unknown" ? "offline" : STATE_ICON[active] ?? "robot"} />
+          </span>
+          <div className="status-text">
+            <p className="status-title" data-testid="activity">
+              {activityText(robot, rooms)}
+            </p>
+            {robot.station_state && robot.station_state !== "idle" && (
+              <p className="status-sub">{STATION[robot.station_state] ?? robot.station_state}</p>
+            )}
+          </div>
+        </div>
         <div className="battery" aria-label={`${T.battery}: ${robot.battery ?? "nav zināms"}%`}>
           <span className="battery-label">{T.battery}</span>
           <span className="battery-value">{robot.battery !== null ? `${robot.battery}%` : "—"}</span>
@@ -71,20 +90,20 @@ export function Home({ status, onChooseRooms }: Props) {
           <>
             <BigButton
               label={T.start}
-              icon="▶"
+              icon="play"
               busy={busy === "start"}
               disabled={disabled || !caps.start}
               onClick={() => void run("start")}
             />
             {caps.clean_rooms && (
-              <BigButton label={T.chooseRooms} variant="secondary" icon="▦" disabled={!online} onClick={onChooseRooms} />
+              <BigButton label={T.chooseRooms} variant="secondary" icon="rooms" disabled={!online} onClick={onChooseRooms} />
             )}
           </>
         )}
         {active === "cleaning" && (
           <BigButton
             label={T.pause}
-            icon="❚❚"
+            icon="pause"
             busy={busy === "pause"}
             disabled={disabled || !caps.pause}
             onClick={() => void run("pause")}
@@ -93,7 +112,7 @@ export function Home({ status, onChooseRooms }: Props) {
         {(active === "paused" || active === "error") && (
           <BigButton
             label={T.resume}
-            icon="▶"
+            icon="play"
             busy={busy === "resume"}
             disabled={disabled || !caps.start}
             onClick={() => void run("resume")}
@@ -102,7 +121,7 @@ export function Home({ status, onChooseRooms }: Props) {
         {(active === "cleaning" || active === "paused" || active === "returning" || active === "error") && (
           <BigButton
             label={T.stop}
-            icon="■"
+            icon="stop"
             variant="danger"
             busy={busy === "stop"}
             disabled={disabled || !caps.stop}
@@ -112,7 +131,7 @@ export function Home({ status, onChooseRooms }: Props) {
         {active !== "docked" && active !== "returning" && (
           <BigButton
             label={T.returnHome}
-            icon="⌂"
+            icon="home"
             variant="secondary"
             busy={busy === "return_to_base"}
             disabled={disabled || !caps.return_to_base}
@@ -154,7 +173,7 @@ export function Home({ status, onChooseRooms }: Props) {
         <BigButton
           label={T.locate}
           variant="plain"
-          icon="♪"
+          icon="sound"
           busy={busy === "locate"}
           disabled={disabled}
           onClick={() => void run("locate")}
