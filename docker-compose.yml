@@ -1,0 +1,27 @@
+services:
+  backend:
+    build: ./backend
+    image: deebot-lv-backend:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATA_DIR: /data
+    volumes:
+      - deebot-data:/data
+    # Not published: only the frontend container can reach it.
+    expose:
+      - "8000"
+
+  frontend:
+    build: ./frontend
+    image: deebot-lv-frontend:latest
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      # Reachable from your home network only. Do NOT forward this port on your router.
+      - "${APP_PORT:-8080}:80"
+
+volumes:
+  deebot-data:

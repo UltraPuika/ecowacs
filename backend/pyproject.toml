@@ -1,0 +1,20 @@
+[project]
+name = "deebot-lv-backend"
+version = "1.0.0"
+description = "Latvian DEEBOT Control backend (FastAPI, Home Assistant adapter)"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+markers = ["realdevice: needs a real Home Assistant + robot (skipped by default)"]
+addopts = "-m 'not realdevice'"
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "ASYNC"]
+ignore = ["E501", "ASYNC109"]  # explicit timeout parameters are intentional
