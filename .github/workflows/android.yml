@@ -2,7 +2,7 @@ name: Android APK
 
 on:
   push:
-    branches: [main, claude/charming-allen-cx7lq0]
+    branches: [main]
     paths: ["android/**", "frontend/public/icon.svg", ".github/workflows/android.yml"]
     tags: ["v*"]
   workflow_dispatch:
