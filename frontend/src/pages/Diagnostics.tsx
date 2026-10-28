@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, ApiError } from "../api";
 import { BigButton, Card } from "../components";
-import { formatDateTime, timeAgo } from "../lv";
+import { formatDateTime, MODE_LABEL, timeAgo } from "../lv";
 import type { CommandLog, LogEvent, Status } from "../types";
 
 type Diag = Record<string, unknown> & { adapter?: Record<string, unknown> };
@@ -41,6 +41,8 @@ export function Diagnostics({ status, onBack }: { status: Status; onBack: () => 
   const a = (diag?.adapter ?? {}) as Record<string, unknown>;
   const recommended = (a.recommended_to_enable as string[] | undefined) ?? [];
   const { robot } = status;
+  const isHa = status.mode === "homeassistant";
+  const robots = (a.robots_in_account as { model?: string; nick?: string; supported: boolean }[] | undefined) ?? [];
 
   return (
     <div className="page">
@@ -48,8 +50,8 @@ export function Diagnostics({ status, onBack }: { status: Status; onBack: () => 
       {error && <p className="feedback feedback-error">{error}</p>}
       <Card title="Savienojums">
         <dl className="kv">
-          <dt>Režīms</dt><dd>{status.mode === "demo" ? "DEMO (nav īsts robots)" : "Home Assistant"}</dd>
-          <dt>Home Assistant</dt><dd>{robot.backend_connected ? "savienots" : "nav savienojuma"}</dd>
+          <dt>Režīms</dt><dd>{MODE_LABEL[status.mode] ?? status.mode}</dd>
+          <dt>{isHa ? "Home Assistant" : "Ecovacs mākonis"}</dt><dd>{robot.backend_connected ? "savienots" : "nav savienojuma"}</dd>
           <dt>Robots</dt><dd>{robot.robot_available ? "sasniedzams" : "nav sasniedzams"}</dd>
           <dt>Pēdējā ziņa</dt><dd>{timeAgo(robot.last_update)} ({formatDateTime(robot.last_update)})</dd>
           <dt>Modelis</dt><dd>{robot.model ?? "nav zināms"}</dd>
@@ -57,6 +59,9 @@ export function Diagnostics({ status, onBack }: { status: Status; onBack: () => 
           {typeof a.ha_version === "string" && (<><dt>HA versija</dt><dd>{a.ha_version}</dd></>)}
           {typeof a.vacuum_entity === "string" && (<><dt>Robota vienība</dt><dd>{a.vacuum_entity}</dd></>)}
           {typeof a.discovery_problem === "string" && (<><dt>Atrašana</dt><dd>{a.discovery_problem}</dd></>)}
+          {robots.length > 0 && (
+            <><dt>Roboti kontā</dt><dd>{robots.map((r) => `${r.nick || r.model || "?"}${r.supported ? "" : " (nav atbalstīts)"}`).join(", ")}</dd></>
+          )}
         </dl>
         {recommended.length > 0 && (
           <div className="feedback feedback-warn">
@@ -66,7 +71,7 @@ export function Diagnostics({ status, onBack }: { status: Status; onBack: () => 
           </div>
         )}
         <div className="button-row">
-          <BigButton label="Pārlasīt Home Assistant" variant="secondary" onClick={() => void rediscover()} />
+          <BigButton label={isHa ? "Pārlasīt Home Assistant" : "Savienoties no jauna"} variant="secondary" onClick={() => void rediscover()} />
           <a className="big-button big-secondary" href="/api/diagnostics/export" download>
             Lejupielādēt diagnostiku
           </a>
@@ -82,7 +87,7 @@ export function Diagnostics({ status, onBack }: { status: Status; onBack: () => 
         </ul>
       </Card>
 
-      {diag && (
+      {diag && isHa && (
         <Card title="Atrastās Home Assistant vienības">
           <pre className="pre">{JSON.stringify(a.entities ?? {}, null, 2)}</pre>
         </Card>

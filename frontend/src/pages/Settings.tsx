@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, ApiError } from "../api";
 import { BigButton, Card, FeedbackBox, Toggle, useCommand, type Feedback } from "../components";
-import { FAN_SPEED, SETTING, T } from "../lv";
+import { FAN_SPEED, SETTING, T, WATER_AMOUNT } from "../lv";
 import type { AnnouncementSettings, Setting, SpeechTargets, Status } from "../types";
 import { Diagnostics } from "./Diagnostics";
 
@@ -40,6 +40,45 @@ function NumberSetting({ setting, disabled, onSave }: {
         </button>
       )}
     </div>
+  );
+}
+
+function EcovacsVerification() {
+  const [code, setCode] = useState("");
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+
+  const call = async (path: string, body: unknown, ok: string) => {
+    setFeedback({ kind: "pending", text: "Sūta…" });
+    try {
+      await api.post(path, body);
+      setFeedback({ kind: "ok", text: ok });
+    } catch (err) {
+      setFeedback({ kind: "error", text: err instanceof ApiError ? err.message : "Neizdevās." });
+    }
+  };
+
+  return (
+    <>
+      <p className="help">
+        Ecovacs grib pārliecināties, ka šī lietotne drīkst izmantot jūsu kontu. Nosūtiet kodu uz konta
+        e-pastu un ievadiet to šeit. Tas jādara tikai vienreiz.
+      </p>
+      <BigButton
+        label="Sūtīt kodu uz e-pastu"
+        variant="secondary"
+        onClick={() => void call("/api/ecovacs/verification/request", {}, "Kods nosūtīts. Pārbaudiet e-pastu.")}
+      />
+      <label className="field">
+        Kods no e-pasta
+        <input value={code} inputMode="text" autoComplete="one-time-code" onChange={(e) => setCode(e.target.value)} />
+      </label>
+      <BigButton
+        label="Apstiprināt"
+        disabled={code.trim().length < 4}
+        onClick={() => void call("/api/ecovacs/verification", { code }, "Apstiprināts. Savienojas ar robotu…")}
+      />
+      <FeedbackBox feedback={feedback} />
+    </>
   );
 }
 
@@ -156,7 +195,7 @@ export function Settings({ status, onLogout, authRequired }: {
   const disabled = !robot.backend_connected || busy !== null;
   const settings = Object.values(robot.settings);
   const setSetting = useCallback(
-    (key: string, value: boolean | number) => void run("set_setting", { key, value }),
+    (key: string, value: boolean | number | string) => void run("set_setting", { key, value }),
     [run],
   );
 
@@ -164,6 +203,11 @@ export function Settings({ status, onLogout, authRequired }: {
 
   return (
     <div className="page">
+      {status.verification_required && (
+        <Card title="Ecovacs konta apstiprināšana">
+          <EcovacsVerification />
+        </Card>
+      )}
       <FeedbackBox feedback={feedback} />
       <Card title="Tīrīšanas iestatījumi">
         {robot.capabilities.fan_speed && robot.fan_speed_options.length > 0 && (
@@ -193,8 +237,22 @@ export function Settings({ status, onLogout, authRequired }: {
         {settings.filter((s) => s.kind === "number").map((s) => (
           <NumberSetting key={s.key} setting={s} disabled={disabled} onSave={(v) => setSetting(s.key, v)} />
         ))}
+        {settings.filter((s) => s.kind === "select").map((s) => (
+          <label key={s.key} className="field">
+            {SETTING[s.key]?.label ?? s.key}
+            <select
+              value={String(s.value ?? "")}
+              disabled={disabled}
+              onChange={(e) => setSetting(s.key, e.target.value)}
+            >
+              {s.options.map((o) => (
+                <option key={o} value={o}>{WATER_AMOUNT[o] ?? o}</option>
+              ))}
+            </select>
+          </label>
+        ))}
         {settings.length === 0 && (
-          <p className="muted">Robots nav atsūtījis iestatījumus vai Home Assistant tās vienības ir izslēgtas.</p>
+          <p className="muted">Robots vēl nav atsūtījis iestatījumus.</p>
         )}
         {robot.capabilities.empty_dustbin && (
           <BigButton
@@ -211,9 +269,11 @@ export function Settings({ status, onLogout, authRequired }: {
         </p>
       </Card>
 
-      <Card title="Paziņojumi latviski">
-        <Announcements />
-      </Card>
+      {robot.capabilities.announcements && (
+        <Card title="Paziņojumi latviski">
+          <Announcements />
+        </Card>
+      )}
 
       <Card title="Papildu">
         <BigButton label="Diagnostika un savienojums" variant="secondary" onClick={() => setShowDiag(true)} />

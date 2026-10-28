@@ -27,7 +27,7 @@ async def adapter():
     if not url or not token:
         pytest.skip("REAL_HA_URL and REAL_HA_TOKEN are not set")
     settings = Settings.from_env(
-        {"HA_URL": url, "HA_TOKEN": token, "AUTH_DISABLED": "true",
+        {"MODE": "homeassistant", "HA_URL": url, "HA_TOKEN": token, "AUTH_DISABLED": "true",
          "HA_VACUUM_ENTITY": os.environ.get("REAL_HA_VACUUM_ENTITY", "")}
     )
     a = HomeAssistantAdapter(settings)

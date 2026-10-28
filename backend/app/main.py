@@ -79,6 +79,7 @@ class AppState:
             "current_session": self.storage.current_session(),
             "server_time": datetime.now(UTC).isoformat(),
             "mode": self.settings.mode,
+            "verification_required": bool(getattr(self.adapter, "verification_required", False)),
         }
 
     async def _broadcast(self, _old: RobotSnapshot, _new: RobotSnapshot) -> None:
@@ -102,7 +103,14 @@ class AppState:
 
 
 def _secrets(settings: Settings) -> tuple[str, ...]:
-    return tuple(s for s in (settings.ha_token, settings.app_password, settings.secret_key) if s)
+    return tuple(
+        s
+        for s in (
+            settings.ha_token, settings.app_password, settings.secret_key,
+            settings.ecovacs_password, settings.ecovacs_username,
+        )
+        if s
+    )
 
 
 def create_app(
@@ -350,7 +358,39 @@ def create_app(
         try:
             await method()
         except Exception as err:
-            raise HTTPException(503, "Neizdevās nolasīt Home Assistant datus.") from err
+            raise HTTPException(503, "Neizdevās savienoties no jauna.") from err
+        return {"ok": True}
+
+    # --- Ecovacs account verification ---------------------------------------------------
+    @app.post("/api/ecovacs/verification/request")
+    async def verification_request() -> dict[str, Any]:
+        method = getattr(state.adapter, "request_verification_code", None)
+        if method is None:
+            raise HTTPException(404, "Šajā režīmā nav pieejams.")
+        try:
+            await method()
+        except AdapterError as err:
+            raise HTTPException(502, err.user_message) from err
+        state.storage.add_event("info", "connection", "Ecovacs apstiprinājuma kods nosūtīts uz e-pastu.")
+        return {"ok": True}
+
+    @app.post("/api/ecovacs/verification")
+    async def verification(request: Request) -> dict[str, Any]:
+        method = getattr(state.adapter, "verify", None)
+        if method is None:
+            raise HTTPException(404, "Šajā režīmā nav pieejams.")
+        try:
+            body = await request.json()
+        except ValueError as err:
+            raise HTTPException(400, "Nederīgs pieprasījums.") from err
+        code = body.get("code") if isinstance(body, dict) else None
+        if not isinstance(code, str) or not 4 <= len(code.strip()) <= 12 or not code.strip().isalnum():
+            raise HTTPException(400, "Ievadiet kodu no e-pasta.")
+        try:
+            await method(code.strip())
+        except AdapterError as err:
+            raise HTTPException(400, err.user_message) from err
+        state.storage.add_event("info", "connection", "Ecovacs konts apstiprināts.")
         return {"ok": True}
 
     # --- live updates -------------------------------------------------------------------

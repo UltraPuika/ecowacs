@@ -124,6 +124,8 @@ def validate(request: CommandRequest, snap: RobotSnapshot) -> CommandRequest:
         if setting.kind == "switch":
             if not isinstance(value, bool):
                 raise ValidationError("Nederīga vērtība.")
+        elif setting.kind == "select":
+            value = _choice(value, setting.options)
         else:
             if not isinstance(value, (int, float)) or isinstance(value, bool):
                 raise ValidationError("Nederīga vērtība.")

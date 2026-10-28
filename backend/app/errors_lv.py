@@ -279,7 +279,7 @@ GENERIC_ERROR = ErrorInfo(
     0,
     "Nepieciešama uzmanība",
     "Robots ziņo par problēmu, bet nepastāstīja, kādu.",
-    "Apskatiet robotu. Kļūdas numurs būs redzams, ja Home Assistant ieslēgsiet sensoru „Error”.",
+    "Apskatiet robotu. Ja kļūda atkārtojas, lejupielādējiet diagnostiku (Iestatījumi → Diagnostika).",
 )
 
 

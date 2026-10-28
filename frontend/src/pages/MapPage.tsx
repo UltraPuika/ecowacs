@@ -260,7 +260,7 @@ export function MapPage({ status }: { status: Status }) {
             <summary>Tikai pieredzējušiem lietotājiem</summary>
             <p className="help">
               Ievadiet taisnstūri robota koordinātās (x1, y1, x2, y2). Šīs koordinātas nav redzamas kartes attēlā,
-              tāpēc nepareizi skaitļi var likt robotam tīrīt citu vietu. Koordinātas var noskaidrot Home Assistant.
+              tāpēc nepareizi skaitļi var likt robotam tīrīt citu vietu.
             </p>
             <div className="zone-grid">
               {["x1", "y1", "x2", "y2"].map((label, i) => (

@@ -10,6 +10,10 @@ def create_adapter(settings: Settings) -> RobotAdapter:
         from .demo import DemoAdapter
 
         return DemoAdapter()
+    if settings.mode == "ecovacs":
+        from .ecovacs import EcovacsAdapter
+
+        return EcovacsAdapter(settings)
     from .homeassistant import HomeAssistantAdapter
 
     return HomeAssistantAdapter(settings)

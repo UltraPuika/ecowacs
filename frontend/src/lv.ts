@@ -74,6 +74,19 @@ export const WORK_MODE: Record<string, string> = {
   mop: "Tikai mazgāt",
 };
 
+export const WATER_AMOUNT: Record<string, string> = {
+  low: "Maz",
+  medium: "Vidēji",
+  high: "Daudz",
+  ultrahigh: "Ļoti daudz",
+};
+
+export const MODE_LABEL: Record<string, string> = {
+  ecovacs: "Ecovacs mākonis (tieši)",
+  homeassistant: "Home Assistant",
+  demo: "DEMO (nav īsts robots)",
+};
+
 export const STATION: Record<string, string> = {
   idle: "Stacija gaida",
   emptying_dustbin: "Stacija iztukšo putekļus",

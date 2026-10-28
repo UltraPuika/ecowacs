@@ -112,7 +112,7 @@ async def wait_until(predicate, timeout=3.0):
 
 
 def make_settings(url: str, token: str = TOKEN) -> Settings:
-    return Settings.from_env({"HA_URL": url, "HA_TOKEN": token, "AUTH_DISABLED": "true"})
+    return Settings.from_env({"MODE": "homeassistant", "HA_URL": url, "HA_TOKEN": token, "AUTH_DISABLED": "true"})
 
 
 async def test_connects_discovers_and_controls(fake_ha):

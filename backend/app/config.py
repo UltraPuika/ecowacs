@@ -11,6 +11,9 @@ class ConfigError(Exception):
     """Raised when the configuration is invalid."""
 
 
+MODES = ("ecovacs", "homeassistant", "demo")
+
+
 def _bool(value: str | None, default: bool = False) -> bool:
     if value is None or value == "":
         return default
@@ -30,7 +33,11 @@ def _float(value: str | None, default: float) -> float:
 class Settings:
     """Application settings."""
 
-    mode: str = "homeassistant"  # "homeassistant" or "demo"
+    mode: str = "ecovacs"  # "ecovacs", "homeassistant" or "demo"
+    ecovacs_username: str = field(default="", repr=False)
+    ecovacs_password: str = field(default="", repr=False)
+    ecovacs_country: str = "LV"
+    ecovacs_device: str = ""
     ha_url: str = ""
     ha_token: str = field(default="", repr=False)
     ha_vacuum_entity: str = ""
@@ -50,12 +57,16 @@ class Settings:
     def from_env(cls, env: dict[str, str] | None = None) -> Settings:
         """Create settings from environment variables."""
         env = dict(os.environ if env is None else env)
-        mode = env.get("MODE", "homeassistant").strip().lower()
-        if mode not in {"homeassistant", "demo"}:
-            raise ConfigError("MODE must be 'homeassistant' or 'demo'")
+        mode = env.get("MODE", "ecovacs").strip().lower()
+        if mode not in MODES:
+            raise ConfigError("MODE must be 'ecovacs', 'homeassistant' or 'demo'")
 
         settings = cls(
             mode=mode,
+            ecovacs_username=env.get("ECOVACS_USERNAME", "").strip(),
+            ecovacs_password=env.get("ECOVACS_PASSWORD", ""),
+            ecovacs_country=env.get("ECOVACS_COUNTRY", "LV").strip().upper(),
+            ecovacs_device=env.get("ECOVACS_DEVICE", "").strip(),
             ha_url=env.get("HA_URL", "").strip().rstrip("/"),
             ha_token=env.get("HA_TOKEN", "").strip(),
             ha_vacuum_entity=env.get("HA_VACUUM_ENTITY", "").strip(),
@@ -78,6 +89,13 @@ class Settings:
 
     def validate(self) -> None:
         """Validate the combination of settings."""
+        if self.mode == "ecovacs":
+            if not self.ecovacs_username or not self.ecovacs_password:
+                raise ConfigError(
+                    "ECOVACS_USERNAME and ECOVACS_PASSWORD are required when MODE=ecovacs"
+                )
+            if len(self.ecovacs_country) != 2 or not self.ecovacs_country.isalpha():
+                raise ConfigError("ECOVACS_COUNTRY must be a two-letter country code, e.g. LV")
         if self.mode == "homeassistant":
             if not self.ha_url.startswith(("http://", "https://")):
                 raise ConfigError("HA_URL must start with http:// or https://")

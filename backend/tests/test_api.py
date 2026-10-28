@@ -83,7 +83,7 @@ def test_stale_data_is_flagged(client, fake_adapter):
     assert client.get("/api/status").json()["freshness"]["stale"] is True
     client.portal.call(_set, fake_adapter, {"backend_connected": False, "last_update": datetime.now(UTC)})
     fresh = client.get("/api/status").json()["freshness"]
-    assert fresh["stale"] is True and "Home Assistant" in fresh["reason"]
+    assert fresh["stale"] is True and "novecojuši" in fresh["reason"]
 
 
 def test_command_endpoint(client, fake_adapter):

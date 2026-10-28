@@ -32,6 +32,9 @@ def test_config_requires_password_or_explicit_opt_out():
     "env",
     [
         {"MODE": "cloud"},
+        {"AUTH_DISABLED": "1"},
+        {"MODE": "ecovacs", "ECOVACS_USERNAME": "a@b.lv", "AUTH_DISABLED": "1"},
+        {"ECOVACS_USERNAME": "a@b.lv", "ECOVACS_PASSWORD": "p", "ECOVACS_COUNTRY": "LVA", "AUTH_DISABLED": "1"},
         {"MODE": "homeassistant", "HA_URL": "ha:8123", "HA_TOKEN": "t", "AUTH_DISABLED": "1"},
         {"MODE": "homeassistant", "HA_URL": "http://ha", "AUTH_DISABLED": "1"},
         {"MODE": "demo", "AUTH_DISABLED": "1", "HA_VACUUM_ENTITY": "sensor.x"},
@@ -43,7 +46,7 @@ def test_config_rejects_invalid(env):
 
 
 def test_ws_url_and_repr_hides_secrets():
-    s = Settings.from_env({"HA_URL": "https://ha.example/", "HA_TOKEN": "tok-xyz", "APP_PASSWORD": "abcdef"})
+    s = Settings.from_env({"MODE": "homeassistant", "HA_URL": "https://ha.example/", "HA_TOKEN": "tok-xyz", "APP_PASSWORD": "abcdef"})
     assert s.ha_ws_url == "wss://ha.example/api/websocket"
     assert "tok-xyz" not in repr(s) and "abcdef" not in repr(s)
 

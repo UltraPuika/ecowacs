@@ -7,18 +7,22 @@ browsers. You can install it on an Android phone like an app (PWA).
 
 ```
  Phone / PC browser ──LAN──► Raspberry Pi: frontend (nginx) ──► backend (FastAPI)
-                                                                   │  WebSocket + REST, long-lived token
-                                                                   ▼
-                                               Home Assistant ── official "Ecovacs" integration
-                                                                   │  (deebot-client 18.7.0, has an X9 PRO OMNI profile)
+                                                                   │  deebot-client 18.7.0 (has an X9 PRO OMNI profile):
+                                                                   │  Ecovacs account login + MQTT live updates
                                                                    ▼
                                                         Ecovacs cloud ◄──► robot
 ```
 
+The app replaces the Ecovacs Home app for everyday use and **does not need Home
+Assistant**. It talks to the Ecovacs cloud directly with your Ecovacs account,
+using the same open-source library as Home Assistant's Ecovacs integration.
+Controlling the robot through Home Assistant (`MODE=homeassistant`) is still
+possible, and is needed only for spoken Latvian announcements on speakers.
+
 ## What works
 
-**Tested in this repository**, using automated tests with a mocked Home
-Assistant and robot:
+**Tested in this repository**, using automated tests with a mocked robot
+(the Ecovacs adapter is tested against deebot-client's real X9 PRO OMNI profile):
 
 | Area | Status |
 |---|---|
@@ -30,10 +34,10 @@ Assistant and robot:
 | Map image with robot position, trace, virtual walls and no-mop zones; "Atjaunot karti" | ✅ |
 | **Hide carpets in this app's map display only** (never changes the robot) | ✅ when the map contains a carpet pixel layer (see [map limitations](docs/MAP_AND_CARPET_LIMITATIONS.md)) |
 | Switch active map / floor (with confirmation) | ✅ |
-| Robot error codes in plain Latvian with a next step | ✅ (needs the HA "Error" sensor enabled) |
+| Robot error codes in plain Latvian with a next step | ✅ |
 | Local cleaning history, event log, command log, clear history (with confirmation) | ✅ |
 | Diagnostics page and export with secrets removed | ✅ |
-| Latvian spoken announcements via Home Assistant TTS (for example Piper `lv_LV-aivars`), phone notifications, no repeats | ✅ |
+| Latvian spoken announcements via Home Assistant TTS (for example Piper `lv_LV-aivars`), phone notifications, no repeats | ✅ only with `MODE=homeassistant` |
 | Password login, rate-limited, signed cookies, CSRF header, no public exposure | ✅ |
 | Demo mode with a permanent purple "DEMO" banner | ✅ |
 
@@ -53,19 +57,21 @@ lists the checks to do on your robot.
 
 ## How to connect your real DEEBOT X9 PRO OMNI (summary)
 
-1. **Home Assistant:** go to Settings → Devices & services → Add integration →
-   **Ecovacs** and log in with your Ecovacs account. The robot appears as `vacuum.<name>`.
-2. In HA, open the robot's device page and **enable** these disabled entities:
-   **Error** (sensor), **Last job** (event), and optionally **Carpet auto fan
-   speed boost** and **Continuous cleaning**. See [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md).
-3. In HA, create a **long-lived access token**: your profile → Security.
-4. On the Pi, clone this repository, then run `cp .env.example .env`. Set
-   `HA_URL`, `HA_TOKEN` and `APP_PASSWORD`.
-5. Run `docker compose up -d --build`.
-6. On the phone, either open `http://<pi-ip>:8080` and use **⋮ → Add to Home screen**,
-   or install the **Android APK** from the GitHub Releases page ([docs/ANDROID_APP.md](docs/ANDROID_APP.md)).
+1. Make sure the robot works in the Ecovacs Home app. You need the app once to
+   add the robot to your account and to create the map.
+2. On the Pi, clone this repository, then run `cp .env.example .env`. Set
+   `ECOVACS_USERNAME`, `ECOVACS_PASSWORD`, `ECOVACS_COUNTRY` (for example `LV`)
+   and `APP_PASSWORD`.
+3. Run `docker compose up -d --build`.
+4. Open `http://<pi-ip>:8080`. If Ecovacs asks to confirm this new login, go to
+   **Iestatījumi → Ecovacs konta apstiprināšana**, send the code to your e-mail
+   and enter it. This is needed only once. The login token and a fixed client
+   ID are kept in the data volume (`ecovacs.json`, readable only by the app).
+5. On the phone, either use **⋮ → Add to Home screen**, or install the
+   **Android APK** from the GitHub Releases page ([docs/ANDROID_APP.md](docs/ANDROID_APP.md)).
 
-Full steps: [docs/INSTALL_RASPBERRY_PI.md](docs/INSTALL_RASPBERRY_PI.md).
+Full steps: [docs/INSTALL_RASPBERRY_PI.md](docs/INSTALL_RASPBERRY_PI.md). To use
+Home Assistant instead, set `MODE=homeassistant` and follow [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md).
 
 To try the app without a robot, set `MODE=demo` in `.env`. Everything shown is
 simulated and labelled "DEMO".
@@ -75,7 +81,7 @@ simulated and labelled "DEMO".
 Running the app costs **€0**. It uses no paid API, subscription or analytics.
 
 The robot is controlled through the **Ecovacs cloud**, the same way the official
-app and the HA integration work. If Ecovacs' servers or your internet connection
+app works. If Ecovacs' servers or your internet connection
 are down, the app shows "Nav savienojuma ar robotu" and does not invent a state.
 HA supports a self-hosted Bumper server as an alternative, but whether it works
 with the X9 is unverified.
@@ -85,10 +91,10 @@ Latvian speech via Piper runs locally on the Pi.
 ## Development
 
 ```bash
-# backend (Python 3.12+)
+# backend (Python 3.14+, required by deebot-client)
 cd backend && python -m venv .venv && . .venv/bin/activate
 pip install -r requirements-dev.txt
-python -m pytest            # 93 tests, no robot or HA needed
+python -m pytest            # no robot, Ecovacs account or HA needed
 ruff check .
 MODE=demo AUTH_DISABLED=true DATA_DIR=./data uvicorn --factory app.main:build --port 8000
 
@@ -119,7 +125,8 @@ REAL_HA_URL=http://192.168.1.10:8123 REAL_HA_TOKEN=... python -m pytest -m reald
 
 ```
 backend/app/
-  adapters/homeassistant.py  entity discovery (registry, no guessed IDs) + snapshot + HA service calls
+  adapters/ecovacs.py        direct Ecovacs cloud adapter (deebot-client): login, e-mail verification, MQTT, commands, map
+  adapters/homeassistant.py  optional: entity discovery (registry, no guessed IDs) + snapshot + HA service calls
   adapters/ha_client.py      HA WebSocket client, reconnect with backoff, slow retry after bad token
   adapters/demo.py           simulated robot (always flagged demo=True)
   commands.py                validation, duplicate prevention, timeouts, state-verified results

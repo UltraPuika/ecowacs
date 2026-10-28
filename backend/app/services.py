@@ -28,7 +28,10 @@ def freshness(snap: RobotSnapshot, now: datetime, stale_after: float) -> dict[st
     if snap.demo:
         pass
     elif not snap.backend_connected:
-        reason = "Nav savienojuma ar Home Assistant. Rādītie dati var būt novecojuši."
+        reason = (
+            (snap.connection_problem or "Nav savienojuma ar robota serveri.")
+            + " Rādītie dati var būt novecojuši."
+        )
     elif not snap.robot_available:
         reason = "Nav savienojuma ar robotu. Rādītie dati var būt novecojuši."
     elif age is None:
@@ -60,7 +63,7 @@ class EventLog:
     def on_snapshot(self, old: RobotSnapshot, new: RobotSnapshot) -> None:
         if old.backend_connected != new.backend_connected:
             if new.backend_connected:
-                self._storage.add_event("info", "connection", "Savienojums ar Home Assistant atjaunots.")
+                self._storage.add_event("info", "connection", "Savienojums atjaunots.")
             else:
                 self._storage.add_event(
                     "warning", "connection", new.connection_problem or "Savienojums pārtrūka."

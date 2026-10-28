@@ -1,8 +1,8 @@
 [project]
 name = "deebot-lv-backend"
 version = "1.0.0"
-description = "Latvian DEEBOT Control backend (FastAPI, Home Assistant adapter)"
-requires-python = ">=3.12"
+description = "Latvian DEEBOT Control backend (FastAPI, direct Ecovacs cloud adapter)"
+requires-python = ">=3.14"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
