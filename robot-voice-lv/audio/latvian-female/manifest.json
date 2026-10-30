@@ -1,0 +1,125 @@
+{
+  "voice": "edge:lv-LV-EveritaNeural",
+  "files": [
+    {
+      "id": "start_cleaning",
+      "text": "Sāku tīrīšanu.",
+      "file": "start_cleaning.wav",
+      "sample_rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_s": 1.209,
+      "sha256": "1d6810be455c87265c20fd74e304f442d92e98b360c61a149e8de0849e4fc34a"
+    },
+    {
+      "id": "start_room_cleaning",
+      "text": "Uzsāku telpas tīrīšanu.",
+      "file": "start_room_cleaning.wav",
+      "sample_rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_s": 1.728,
+      "sha256": "7c89417e18110a33d273d169f188f5191e38482a2025550d94322c7829804dda"
+    },
+    {
+      "id": "return_to_dock",
+      "text": "Atgriežos uzlādes stacijā.",
+      "file": "return_to_dock.wav",
+      "sample_rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_s": 1.798,
+      "sha256": "114feaac213c75ee8978e7a16440e38265edfef39a747ed745dfd5f568d0f903"
+    },
+    {
+      "id": "charging_start",
+      "text": "Sāku uzlādi.",
+      "file": "charging_start.wav",
+      "sample_rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_s": 1.058,
+      "sha256": "aab3b75511c3e515a20d161d674ffd04f5c802402d96a0073c2d63472a1dd3f0"
+    },
+    {
+      "id": "cleaning_done",
+      "text": "Tīrīšana pabeigta.",
+      "file": "cleaning_done.wav",
+      "sample_rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_s": 1.292,
+      "sha256": "4e6c44052aa91a2bdf8afa3110d20c63321eaa31ada5cae0011911fb817ce37d"
+    },
+    {
+      "id": "check_water_tank",
+      "text": "Lūdzu, pārbaudiet ūdens tvertni.",
+      "file": "check_water_tank.wav",
+      "sample_rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_s": 2.12,
+      "sha256": "f3234c8460b89ddd1388cb0286d6b0e8d9440391f1a3e708602582614c87194d"
+    },
+    {
+      "id": "empty_dustbin",
+      "text": "Lūdzu, iztukšojiet putekļu tvertni.",
+      "file": "empty_dustbin.wav",
+      "sample_rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_s": 2.206,
+      "sha256": "a39a24f88d2d6511b2c1d07dbde135372b791675997c18159fa6e4b514631469"
+    },
+    {
+      "id": "dustbin_full",
+      "text": "Putekļu tvertne ir pilna.",
+      "file": "dustbin_full.wav",
+      "sample_rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_s": 1.513,
+      "sha256": "91b3ab0fb6078adefa8cb9e7f6110a46775d53b4d037dbccaa635efe75f5a66a"
+    },
+    {
+      "id": "stuck",
+      "text": "Esmu iestrēgusi.",
+      "file": "stuck.wav",
+      "sample_rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_s": 1.217,
+      "sha256": "21b309362fe300cd79a73e1e94f5b8deb13bba698c3ceba8df3ce8db738ea286"
+    },
+    {
+      "id": "need_help",
+      "text": "Man nepieciešama palīdzība.",
+      "file": "need_help.wav",
+      "sample_rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_s": 1.718,
+      "sha256": "2b8a45f4e7270de16c3b2d93a3239b53221f5ae585af656cb9400693cbf34280"
+    },
+    {
+      "id": "pause_cleaning",
+      "text": "Tīrīšana pauzēta.",
+      "file": "pause_cleaning.wav",
+      "sample_rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_s": 1.324,
+      "sha256": "0e9d29c68b09d334acd0e8d05b9244c039ba5cd185a465f3f57f1718488755a8"
+    },
+    {
+      "id": "resume_cleaning",
+      "text": "Turpinu tīrīšanu.",
+      "file": "resume_cleaning.wav",
+      "sample_rate": 24000,
+      "channels": 1,
+      "bits": 16,
+      "duration_s": 1.254,
+      "sha256": "9d5bcd603096a8c0f2bb5516cca845cb75f42223386c80a8732a3c1e4196a06e"
+    }
+  ]
+}

@@ -31,7 +31,14 @@ from deebot_client.models import DeviceInfo, Room, State
 from deebot_client.rs.map import RotationAngle
 
 from app.adapters.base import NotConnectedError
-from app.adapters.ecovacs import STATE_FILE, EcovacsAdapter, _Store, build_snapshot, choose_device
+from app.adapters.ecovacs import (
+    STATE_FILE,
+    EcovacsAdapter,
+    _Store,
+    build_snapshot,
+    choose_device,
+    parse_outline,
+)
 from app.config import Settings
 from app.models import Activity, CommandName, CommandRequest
 
@@ -81,6 +88,13 @@ def test_snapshot_maps_events():
     caps = snap.capabilities
     assert caps["clean_rooms"] and caps["active_map"] and caps["empty_dustbin"] and caps["map"]
     assert caps["announcements"] is False
+
+
+def test_room_outline_parsing():
+    assert parse_outline("100,-200;300,-200;300,400") == ((100, -200), (300, -200), (300, 400))
+    assert parse_outline("") == ()  # newer robots send no polygon
+    assert parse_outline("1,2;3") == ()
+    assert parse_outline("1,2;3,4") == ()  # not a polygon
 
 
 def test_snapshot_offline_and_errors():

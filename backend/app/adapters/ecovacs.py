@@ -127,6 +127,20 @@ def _setting(key: str, cap: Any, event: Event | None) -> Setting | None:
     return None
 
 
+def parse_outline(coordinates: str) -> tuple[tuple[int, int], ...]:
+    """Parse a room polygon "x,y;x,y;..." (older robots). Newer robots send nothing."""
+    points: list[tuple[int, int]] = []
+    for pair in coordinates.split(";"):
+        parts = pair.strip().split(",")
+        if len(parts) != 2:
+            return ()
+        try:
+            points.append((round(float(parts[0])), round(float(parts[1]))))
+        except ValueError:
+            return ()
+    return tuple(points) if len(points) >= 3 else ()
+
+
 def map_names(event: CachedMapInfoEvent | None) -> tuple[dict[str, str], str | None]:
     """Return ({name: map_id}, active name) like Home Assistant's active-map select."""
     if event is None:
@@ -192,7 +206,8 @@ def build_snapshot(
     if caps.map:
         if rooms := last(RoomsEvent):
             snap.rooms = tuple(
-                Room(str(r.id), r.name or f"Telpa {r.id}") for r in sorted(rooms.rooms, key=lambda r: r.id)
+                Room(str(r.id), r.name or f"Telpa {r.id}", parse_outline(r.coordinates or ""))
+                for r in sorted(rooms.rooms, key=lambda r: r.id)
             )
         by_name, snap.active_map = map_names(last(CachedMapInfoEvent))
         snap.map_options = tuple(sorted(by_name, key=lambda n: (n.isdigit(), n.lower())))
@@ -601,6 +616,19 @@ class EcovacsAdapter(RobotAdapter):
         except Exception as err:
             raise AdapterError("Neizdevās ielādēt karti.", type(err).__name__) from err
         return svg.encode() if svg else None
+
+    def map_rotation(self) -> int | None:
+        device = self._device
+        if device is None or device.map is None:
+            return None
+        info: CachedMapInfoEvent | None = device.events.get_last_event(CachedMapInfoEvent)
+        used = next((m for m in info.maps if m.using), None) if info else None
+        if used is None:
+            return 0
+        try:
+            return int(str(used.angle.name).removeprefix("DEG_"))
+        except ValueError:
+            return None
 
     # --- diagnostics --------------------------------------------------------------
     async def diagnostics(self) -> dict[str, Any]:

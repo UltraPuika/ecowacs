@@ -12,7 +12,7 @@ from app.adapters.demo import DemoAdapter
 from app.auth import Authenticator, LoginRateLimiter, load_secret
 from app.config import ConfigError, Settings
 from app.errors_lv import known_codes, translate_error
-from app.map_svg import render_map
+from app.map_svg import render_map, view_box
 from app.models import Activity, CommandName, CommandRequest
 from app.redact import REDACTED, RedactingFilter, redact, redact_text
 from app.storage import Storage
@@ -142,5 +142,10 @@ async def test_demo_adapter_is_marked_and_works():
         assert adapter.snapshot.activity == Activity.DOCKED
         render = render_map(await adapter.get_map_svg(), hide_carpet=False)
         assert render.carpet_found is True
+        assert view_box(await adapter.get_map_svg()) == [0, 0, 200, 130]
+        assert adapter.map_rotation() == 0
+        living = adapter.snapshot.rooms[0]
+        # SVG (4, 4) at 50 mm per unit with the y axis flipped
+        assert living.outline[0] == (200, -200)
     finally:
         await adapter.stop()

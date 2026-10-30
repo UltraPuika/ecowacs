@@ -1,0 +1,13 @@
+id,event,original_en,original_en_source,latvian,latvian_female,status,original_file
+start_cleaning,Cleaning start,Starting cleaning,task brief,Sāku tīrīšanu.,Sāku tīrīšanu.,meaning confirmed; robot file unidentified,
+start_room_cleaning,Room cleaning start,,task brief (Latvian only),Uzsāku telpas tīrīšanu.,Uzsāku telpas tīrīšanu.,meaning confirmed; robot file unidentified,
+return_to_dock,Returning to charging station,Returning to charging station,task brief,Atgriežos uzlādes stacijā.,Atgriežos uzlādes stacijā.,meaning confirmed; robot file unidentified,
+charging_start,Charging start,Charging started,task brief,Sāku uzlādi.,Sāku uzlādi.,meaning confirmed; robot file unidentified,
+cleaning_done,Cleaning completion,Cleaning completed,task brief,Tīrīšana pabeigta.,Tīrīšana pabeigta.,meaning confirmed; robot file unidentified,
+check_water_tank,Water tank warning,Please check water tank,task brief,"Lūdzu, pārbaudiet ūdens tvertni.","Lūdzu, pārbaudiet ūdens tvertni.",meaning confirmed; robot file unidentified,
+empty_dustbin,Dustbin warning,,task brief (Latvian only),"Lūdzu, iztukšojiet putekļu tvertni.","Lūdzu, iztukšojiet putekļu tvertni.",meaning confirmed; robot file unidentified,
+dustbin_full,Dustbin full,Dustbin is full,task brief,Putekļu tvertne ir pilna.,Putekļu tvertne ir pilna.,meaning confirmed; robot file unidentified,
+stuck,Stuck,I am stuck,task brief,Esmu iestrēdzis.,Esmu iestrēgusi.,meaning confirmed; robot file unidentified,
+need_help,Needs help,,task brief (Latvian only),Man nepieciešama palīdzība.,Man nepieciešama palīdzība.,meaning confirmed; robot file unidentified,
+pause_cleaning,Cleaning pause,,test scenario only,Tīrīšana pauzēta.,Tīrīšana pauzēta.,PROVISIONAL: original wording unknown,
+resume_cleaning,Cleaning resume,,test scenario only,Turpinu tīrīšanu.,Turpinu tīrīšanu.,PROVISIONAL: original wording unknown,

@@ -10,6 +10,8 @@ export type Activity =
 export interface Room {
   id: string;
   name: string;
+  /** Polygon in robot coordinates (mm). Empty when the robot does not send it. */
+  outline?: [number, number][];
 }
 
 export interface ErrorInfo {
@@ -92,6 +94,10 @@ export interface MapMeta {
   active_map?: string | null;
   has_pixel_layer?: boolean;
   carpet_found?: boolean | null;
+  /** SVG viewBox [x, y, width, height]. */
+  view_box?: [number, number, number, number] | null;
+  /** Clockwise map rotation in degrees; null when zones cannot be drawn on the map. */
+  zone_rotation?: number | null;
 }
 
 export interface AnnouncementSettings {

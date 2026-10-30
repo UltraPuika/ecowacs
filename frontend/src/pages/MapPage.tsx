@@ -1,65 +1,27 @@
-import { useCallback, useEffect, useState } from "react";
-import { api, ApiError } from "../api";
+import { useEffect, useState } from "react";
 import { BigButton, Card, ConfirmDialog, FeedbackBox, Toggle, useCommand } from "../components";
-import { Icon } from "../icons";
-import { formatDateTime, T, timeAgo } from "../lv";
-import type { MapMeta, Status } from "../types";
-
-const CARPET_KEY = "deebot.showCarpets";
-
-function loadShowCarpets(): boolean {
-  try {
-    return window.localStorage.getItem(CARPET_KEY) !== "0";
-  } catch {
-    return true;
-  }
-}
+import { formatDateTime, timeAgo } from "../lv";
+import { loadShowCarpets, mapImageUrl, MapView, saveShowCarpets, useMapMeta } from "../MapView";
+import type { Status } from "../types";
 
 export function MapPage({ status }: { status: Status }) {
   const { robot } = status;
   const caps = robot.capabilities;
   const { run, busy, feedback } = useCommand();
-  const [meta, setMeta] = useState<MapMeta | null>(null);
-  const [metaError, setMetaError] = useState<string | null>(null);
+  const { meta, error: metaError, reload: loadMeta } = useMapMeta(robot.map_updated);
   const [version, setVersion] = useState(0);
   const [imageFailed, setImageFailed] = useState(false);
-  const [zoom, setZoom] = useState(1);
   const [showCarpets, setShowCarpets] = useState(loadShowCarpets);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [twice, setTwice] = useState(false);
   const [pendingMap, setPendingMap] = useState<string | null>(null);
   const [zone, setZone] = useState(["", "", "", ""]);
-
-  const loadMeta = useCallback(async () => {
-    try {
-      setMeta(await api.get<MapMeta>("/api/map/meta"));
-      setMetaError(null);
-    } catch (err) {
-      setMetaError(err instanceof ApiError ? err.message : "Neizdevās ielādēt karti.");
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadMeta();
-  }, [loadMeta, robot.map_updated]);
 
   useEffect(() => {
     setImageFailed(false);
   }, [version, robot.map_updated, showCarpets]);
 
-  // Forget selections for rooms that no longer exist (e.g. map changed).
-  useEffect(() => {
-    const ids = new Set(robot.rooms.map((r) => r.id));
-    setSelected((prev) => prev.filter((id) => ids.has(id)));
-  }, [robot.rooms]);
-
   const toggleCarpets = (value: boolean) => {
     setShowCarpets(value);
-    try {
-      window.localStorage.setItem(CARPET_KEY, value ? "1" : "0");
-    } catch {
-      /* storage unavailable: preference lasts for this visit only */
-    }
+    saveShowCarpets(value);
   };
 
   const refreshMap = async () => {
@@ -72,60 +34,15 @@ export function MapPage({ status }: { status: Status }) {
     }
   };
 
-  const toggleRoom = (id: string) =>
-    setSelected((prev) => (prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]));
-
-  const imageUrl = `/api/map.svg?carpets=${showCarpets ? "show" : "hide"}&v=${version}-${encodeURIComponent(
-    robot.map_updated ?? "",
-  )}`;
+  const imageUrl = mapImageUrl(robot.map_updated, showCarpets, version);
   const disabled = !robot.backend_connected || busy !== null;
   const zoneNumbers = zone.map((z) => Number.parseInt(z, 10));
   const zoneValid = zone.every((z) => /^-?\d+$/.test(z.trim()));
+  const box = meta?.view_box ?? null;
 
   return (
     <div className="page">
       <FeedbackBox feedback={feedback} />
-
-      <Card title="Telpas">
-        {robot.rooms.length === 0 ? (
-          <p className="muted">
-            Robots vēl nav atsūtījis telpu sarakstu. Ja tas neparādās, nospiediet „Atjaunot karti”.
-          </p>
-        ) : (
-          <>
-            <p className="muted">Pieskarieties telpām, kuras tīrīt.</p>
-            <div className="room-grid">
-              {robot.rooms.map((room) => (
-                <button
-                  key={room.id}
-                  type="button"
-                  className={`room ${selected.includes(room.id) ? "selected" : ""}`}
-                  aria-pressed={selected.includes(room.id)}
-                  onClick={() => toggleRoom(room.id)}
-                >
-                  <span className="room-mark">
-                    {selected.includes(room.id) && (
-                      <>
-                        <Icon name="check" />
-                        <span className="visually-hidden">✓</span>
-                      </>
-                    )}
-                  </span>
-                  {selected.includes(room.id) ? " " : ""}
-                  <span className="room-name">{room.name}</span>
-                </button>
-              ))}
-            </div>
-            <Toggle label={T.cleanTwice} checked={twice} onChange={setTwice} />
-            <BigButton
-              label={T.cleanSelected(selected.length)}
-              busy={busy === "clean_rooms"}
-              disabled={disabled || selected.length === 0 || !caps.clean_rooms}
-              onClick={() => void run("clean_rooms", { rooms: selected, cleanings: twice ? 2 : 1 })}
-            />
-          </>
-        )}
-      </Card>
 
       <Card title="Karte">
         <p>
@@ -141,26 +58,18 @@ export function MapPage({ status }: { status: Status }) {
             {meta.error ?? "Karte nav pieejama. Robots to vēl nav atsūtījis vai karte nav izveidota."}
           </p>
         )}
-        {meta?.available && !imageFailed && (
+        {meta?.available && box && !imageFailed && (
           <>
-            <div className="map-frame">
-              <img
-                src={imageUrl}
-                alt="Robota saglabātā karte"
-                style={{ width: `${zoom * 100}%` }}
-                onError={() => setImageFailed(true)}
-              />
-            </div>
-            <div className="zoom-row">
-              <button type="button" className="small-button" onClick={() => setZoom((z) => Math.max(1, z - 0.5))}>
-                − Tālināt
-              </button>
-              <button type="button" className="small-button" onClick={() => setZoom((z) => Math.min(4, z + 0.5))}>
-                + Tuvināt
-              </button>
-            </div>
+            <MapView
+              src={imageUrl}
+              viewBox={box}
+              rotation={meta.zone_rotation ?? null}
+              label="Robota saglabātā karte"
+              rooms={robot.rooms}
+              onImageError={() => setImageFailed(true)}
+            />
             <ul className="legend">
-              <li><span className="swatch robot" /> dzeltens aplis — robots</li>
+              <li><span className="swatch robot" /> zils aplis — robots, dzeltena adata — stacija</li>
               <li><span className="swatch trace" /> balta līnija — kur robots brauca šajā tīrīšanā</li>
               <li><span className="swatch wall" /> sarkans — virtuālā siena / aizliegtā zona</li>
               <li><span className="swatch nomop" /> oranžs — zona bez mazgāšanas</li>
@@ -239,7 +148,7 @@ export function MapPage({ status }: { status: Status }) {
               pārbaudiet, vai ceļu neaizšķērso vadi, sliekšņi vai mēbeles.
             </li>
             <li>
-              Ja mēbeles ir pārvietotas, iztīriet konkrēto telpu atsevišķi (augstāk „Telpas”). Robots kartē
+              Ja mēbeles ir pārvietotas, iztīriet konkrēto telpu atsevišķi (Sākums → „Telpas”). Robots kartē
               redz šķēršļus, kas tur bija iepriekšējā reizē.
             </li>
             <li>
@@ -254,7 +163,7 @@ export function MapPage({ status }: { status: Status }) {
         </details>
       </Card>
 
-      {caps.clean_zone && (
+      {caps.clean_zone && meta?.zone_rotation == null && (
         <Card title="Papildu: zonas tīrīšana pēc koordinātām">
           <details>
             <summary>Tikai pieredzējušiem lietotājiem</summary>

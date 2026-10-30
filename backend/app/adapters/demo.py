@@ -22,27 +22,68 @@ _PALETTE = bytes(
 )  # transparent, floor, wall, carpet (same as deebot-client)
 
 
+# Same units as deebot-client's SVG: 1 unit = 50 mm, robot y axis points up.
+_W, _H = 200, 130
+# Rooms as (x1, y1, x2, y2) in SVG units.
+_ROOMS = {
+    "1": ("Viesistaba", (4, 4, 104, 72)),
+    "2": ("Virtuve", (104, 4, 196, 58)),
+    "3": ("Guļamistaba", (4, 72, 104, 126)),
+    "4": ("Gaitenis", (104, 58, 196, 126)),
+}
+
+
+def _is_wall(x: int, y: int) -> bool:
+    if x in (3, 4, _W - 5, _W - 4) or y in (3, 4, _H - 5, _H - 4):
+        return True
+    return (
+        (x == 104 and not (25 <= y <= 36 or 60 <= y <= 70 or 95 <= y <= 107))
+        or (y == 72 and x <= 104)
+        or (y == 58 and x >= 104 and not 140 <= x <= 154)
+    )
+
+
 def _demo_map_png() -> bytes:
-    w, h = 60, 40
     pixels = []
-    for y in range(h):
+    for y in range(_H):
         row = []
-        for x in range(w):
-            if x in (0, w - 1) or y in (0, h - 1) or (x == 30 and not 15 < y < 22):
+        for x in range(_W):
+            if not (3 <= x <= _W - 4 and 3 <= y <= _H - 4):
+                row.append(0)
+            elif _is_wall(x, y):
                 row.append(2)
-            elif 8 <= x <= 20 and 10 <= y <= 25:
-                row.append(3)  # a carpet in the "living room"
+            elif 22 <= x <= 62 and 22 <= y <= 50:
+                row.append(3)  # a carpet in the living room
             else:
                 row.append(1)
         pixels.append(row)
-    return make_indexed_png(w, h, pixels, _PALETTE)
+    return make_indexed_png(_W, _H, pixels, _PALETTE)
+
+
+def _outline(box: tuple[int, int, int, int]) -> tuple[tuple[int, int], ...]:
+    x1, y1, x2, y2 = box
+    return tuple((x * 50, -y * 50) for x, y in ((x1, y1), (x2, y1), (x2, y2), (x1, y2)))
 
 
 DEMO_SVG = (
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40">'
-    '<image x="0" y="0" width="60" height="40" style="image-rendering: pixelated" '
+    f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {_W} {_H}">'
+    f'<image x="0" y="0" width="{_W}" height="{_H}" style="image-rendering: pixelated" '
     'href="data:image/png;base64,' + base64.b64encode(_demo_map_png()).decode() + '"/>'
-    '<text x="30" y="22" font-size="4" text-anchor="middle" fill="#900">DEMO</text>'
+    '<defs><radialGradient id="dbg" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">'
+    '<stop offset="70%" style="stop-color:#00f"/><stop offset="97%" style="stop-color:#00f0"/>'
+    '</radialGradient><g id="d"><circle fill="url(#dbg)" r="5"/>'
+    '<circle fill="blue" r="3.5" stroke="white" stroke-width="0.5"/></g>'
+    '<g id="c"><path d="M4-6.4C4-4.2 0 0 0 0s-4-4.2-4-6.4 1.8-4 4-4 4 1.8 4 4z" fill="#ffe605"/>'
+    '<circle cy="-6.4" fill="#fff" r="2.8"/></g></defs>'
+    '<path fill="none" stroke="#fff" stroke-width="1.2" stroke-linejoin="round" '
+    'd="M150 112V65H96V14H88V66H80V14H72V66H64V14"/>'
+    '<g class="w"><path class="v" d="M20 110h40"/></g>'
+    '<g class="w"><path class="n" d="M160 12h28v20h-28z"/></g>'
+    '<use href="#c" x="150" y="124"/><use href="#d" x="150" y="114"/>'
+    '<text x="100" y="68" font-size="10" font-weight="700" text-anchor="middle" '
+    'fill="#6a1b9a" fill-opacity="0.25">DEMO</text>'
+    "<style>path{stroke-width: 1.5; vector-effect: non-scaling-stroke}.w path{stroke-dasharray: 4}"
+    ".v{stroke: #f00000; fill: #f0000030}.n{stroke: #ffa500; fill: #ffa50030}</style>"
     "</svg>"
 ).encode()
 
@@ -70,12 +111,7 @@ class DemoAdapter(RobotAdapter):
                 fan_speed_options=("quiet", "normal", "max", "max_plus"),
                 work_mode="vacuum_and_mop",
                 work_mode_options=("vacuum", "vacuum_and_mop", "mop_after_vacuum"),
-                rooms=(
-                    Room("1", "Viesistaba"),
-                    Room("2", "Virtuve"),
-                    Room("3", "Guļamistaba"),
-                    Room("4", "Gaitenis"),
-                ),
+                rooms=tuple(Room(rid, name, _outline(box)) for rid, (name, box) in _ROOMS.items()),
                 active_map="Pirmais stāvs",
                 map_options=("Pirmais stāvs",),
                 map_updated=now,
@@ -165,6 +201,9 @@ class DemoAdapter(RobotAdapter):
 
     async def get_map_svg(self) -> bytes | None:
         return DEMO_SVG
+
+    def map_rotation(self) -> int | None:
+        return 0
 
     async def diagnostics(self) -> dict[str, Any]:
         return {"integration": "demo", "note": "Simulēts robots. Dati nav īsti."}

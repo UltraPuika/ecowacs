@@ -6,7 +6,7 @@
 |---|---|---|
 | 1. Official Latvian voice pack on the robot | **UNVERIFIED / not controllable from this app** | `deebot-client` has **no command to read or change the robot's voice language** for any model. It only has volume and the YIKO voice-assistant on/off. No public source lists Latvian among the X9 PRO OMNI's voice languages. Check yourself in **Ecovacs Home → robot → Settings → Voice / Voice language**. If Latvian is listed, select it there. The app cannot do it for you. |
 | 2. Latvian announcements through Home Assistant | **IMPLEMENTED** | Spoken on a speaker via HA TTS, or sent as a phone notification. Details below. |
-| 3. Custom audio files on the robot | **NOT SUPPORTED** | There is no documented mechanism. Community approaches need root or firmware access, which this project rejects because of bricking and security risk. The app never claims the robot can speak arbitrary Latvian audio. |
+| 3. Custom audio files on the robot | **NOT SUPPORTED** | There is no documented mechanism. Community approaches need root or firmware access, which this project rejects because of bricking and security risk. The app never claims the robot can speak arbitrary Latvian audio. Research, pre-generated Latvian clips, and a gated procedure are in [robot-voice-lv/](../robot-voice-lv/README.md). |
 
 The robot's own voice is therefore whatever language the Ecovacs app offers.
 Latvian speech comes from **your speakers or phones**, through Home Assistant.

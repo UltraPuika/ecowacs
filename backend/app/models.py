@@ -70,6 +70,8 @@ class Room:
 
     id: str
     name: str
+    # Polygon in robot map coordinates (mm); empty when the robot does not send it.
+    outline: tuple[tuple[int, int], ...] = ()
 
 
 @dataclass(frozen=True)

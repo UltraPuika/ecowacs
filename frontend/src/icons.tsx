@@ -58,6 +58,13 @@ const PATHS: Record<string, ReactNode> = {
     </>
   ),
   check: <path d="M5 12.5 9.5 17 19 7.5" />,
+  zone: (
+    <>
+      <rect x="4" y="4" width="16" height="16" rx="1.5" strokeDasharray="3 2.5" />
+      <circle cx="4" cy="4" r="1.6" fill="currentColor" />
+      <circle cx="20" cy="20" r="1.6" fill="currentColor" />
+    </>
+  ),
   alert: (
     <>
       <path d="M10.3 4.3 2.6 17.6A2 2 0 0 0 4.3 20.6h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z" />

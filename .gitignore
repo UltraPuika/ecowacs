@@ -8,3 +8,6 @@ __pycache__/
 node_modules/
 frontend/dist/
 *.sqlite3*
+robot-voice-lv/models/
+robot-voice-lv/audio/original/files/
+robot-voice-lv/backup/vault/

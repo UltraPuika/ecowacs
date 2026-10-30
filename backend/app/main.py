@@ -23,7 +23,7 @@ from .adapters.base import AdapterError
 from .auth import COOKIE_NAME, Authenticator, LoginRateLimiter, load_secret
 from .commands import CommandService
 from .config import Settings
-from .map_svg import render_map
+from .map_svg import render_map, view_box
 from .models import CommandName, CommandRequest, RobotSnapshot
 from .redact import RedactingFilter, redact
 from .services import AnnouncementSettings, Announcer, EventLog, HistoryTracker, freshness
@@ -235,6 +235,7 @@ def create_app(
         if svg is None:
             return {"available": False, "error": None, "updated": None}
         render = render_map(svg, hide_carpet=False)
+        box = view_box(svg)
         return {
             "available": True,
             "error": None,
@@ -242,6 +243,9 @@ def create_app(
             "active_map": snap.active_map,
             "has_pixel_layer": render.has_pixel_layer,
             "carpet_found": render.carpet_found,
+            "view_box": box,
+            # Zones can be drawn on the map only when SVG units map to robot coordinates.
+            "zone_rotation": state.adapter.map_rotation() if box else None,
         }
 
     @app.get("/api/map.svg")

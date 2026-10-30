@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "../App";
@@ -76,7 +76,10 @@ describe("App", () => {
 describe("Map page", () => {
   it("explains that hiding carpets only changes this app's picture", async () => {
     routeFetch({
-      "/api/map/meta": { available: true, error: null, updated: null, has_pixel_layer: true, carpet_found: true },
+      "/api/map/meta": {
+        available: true, error: null, updated: null, has_pixel_layer: true, carpet_found: true,
+        view_box: [0, 0, 200, 130], zone_rotation: 0,
+      },
     });
     render(<MapPage status={status()} />);
     expect(await screen.findByText("Paklāji šajā kartē ir atrasti.")).toBeInTheDocument();
@@ -84,7 +87,7 @@ describe("Map page", () => {
     const toggle = screen.getByRole("switch", { name: /Rādīt paklājus kartē/ });
     await userEvent.click(toggle);
     expect(screen.getByRole("switch", { name: /Slēpt paklājus kartē/ })).not.toBeChecked();
-    expect(screen.getByRole("img").getAttribute("src")).toContain("carpets=hide");
+    expect(document.querySelector("image")?.getAttribute("href")).toContain("carpets=hide");
   });
 
   it("says honestly when the map has no carpet layer", async () => {
@@ -93,20 +96,5 @@ describe("Map page", () => {
     });
     render(<MapPage status={status()} />);
     expect(await screen.findByText(/paklāju slānis nav pieejams/)).toBeInTheDocument();
-  });
-
-  it("cleans only the selected rooms", async () => {
-    const fetchMock = routeFetch({
-      "/api/map/meta": { available: false, error: null, updated: null },
-      "/api/commands": { status: "confirmed", message: "Robots sāka tīrīt izvēlētās telpas.", command: "clean_rooms" },
-    });
-    render(<MapPage status={status()} />);
-    const button = screen.getByRole("button", { name: "Tīrīt izvēlētās telpas (0)" });
-    expect(button).toBeDisabled();
-    await userEvent.click(screen.getByRole("button", { name: "Gaitenis" }));
-    await userEvent.click(screen.getByRole("button", { name: "Tīrīt izvēlētās telpas (1)" }));
-    await waitFor(() => expect(screen.getByText("Robots sāka tīrīt izvēlētās telpas.")).toBeInTheDocument());
-    const call = fetchMock.mock.calls.find(([u]) => String(u) === "/api/commands") as unknown as [string, RequestInit];
-    expect(JSON.parse(String(call[1].body))).toEqual({ name: "clean_rooms", params: { rooms: ["2"], cleanings: 1 } });
   });
 });

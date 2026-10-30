@@ -122,12 +122,21 @@ def test_map_carpet_toggle(client, fake_adapter):
     )
     meta = client.get("/api/map/meta").json()
     assert meta["available"] and meta["carpet_found"] is True
+    assert meta["view_box"] is None and meta["zone_rotation"] is None
     shown = client.get("/api/map.svg?carpets=show")
     hidden = client.get("/api/map.svg?carpets=hide")
     assert shown.headers["content-type"].startswith("image/svg+xml")
     assert "default-src 'none'" in shown.headers["content-security-policy"]
     assert shown.content != hidden.content
     assert client.get("/api/map.svg?carpets=<script>").status_code == 400
+
+
+def test_map_view_box_without_known_rotation(client, fake_adapter):
+    login(client)
+    fake_adapter.svg = b'<svg viewBox="-100 -50 200 100" xmlns="http://www.w3.org/2000/svg"></svg>'
+    meta = client.get("/api/map/meta").json()
+    assert meta["view_box"] == [-100, -50, 200, 100]
+    assert meta["zone_rotation"] is None  # adapter cannot map SVG units to robot coordinates
 
 
 def test_no_map(client, fake_adapter):

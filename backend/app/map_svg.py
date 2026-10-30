@@ -21,6 +21,21 @@ PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 CARPET_INDEX = 3
 FLOOR_INDEX = 1
 _DATA_URI = re.compile(rb"data:image/png;base64,([A-Za-z0-9+/=]+)")
+_VIEW_BOX = re.compile(rb'<svg\b[^>]*?\bviewBox="([^"]+)"')
+
+
+def view_box(svg: bytes) -> list[float] | None:
+    """Return the root viewBox [x, y, width, height], or None if missing or invalid."""
+    match = _VIEW_BOX.search(svg)
+    if not match:
+        return None
+    try:
+        values = [float(v) for v in match.group(1).replace(b",", b" ").split()]
+    except ValueError:
+        return None
+    if len(values) != 4 or values[2] <= 0 or values[3] <= 0:
+        return None
+    return values
 
 
 @dataclass(frozen=True)

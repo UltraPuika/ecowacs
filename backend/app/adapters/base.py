@@ -92,6 +92,10 @@ class RobotAdapter(ABC):
     async def get_map_svg(self) -> bytes | None:
         """Return the current map as SVG bytes, or None if there is no map."""
 
+    def map_rotation(self) -> int | None:
+        """Clockwise rotation (0/90/180/270) of the map SVG, or None if map coordinates are unknown."""
+        return None
+
     @abstractmethod
     async def diagnostics(self) -> dict[str, Any]:
         """Return diagnostic data. Must not contain secrets."""

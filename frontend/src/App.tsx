@@ -150,7 +150,7 @@ export function App() {
             <BigButton label="Atjaunot" variant="secondary" onClick={() => void refresh()} />
           </div>
         ) : tab === "home" ? (
-          <Home status={status} onChooseRooms={() => setTab("map")} />
+          <Home status={status} />
         ) : tab === "map" ? (
           <MapPage status={status} />
         ) : tab === "history" ? (
