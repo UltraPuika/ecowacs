@@ -432,8 +432,10 @@ class HomeAssistantAdapter(RobotAdapter):
                     {
                         **target,
                         "command": "spot_area",
+                        # A LIST: deebot-client joins it itself. A pre-joined string
+                        # such as "3,5" would be split per character ("3,,,5").
                         "params": {
-                            "rooms": ",".join(params["rooms"]),
+                            "rooms": [int(r) if r.isdigit() else r for r in params["rooms"]],
                             "cleanings": params.get("cleanings", 1),
                         },
                     },
@@ -446,7 +448,7 @@ class HomeAssistantAdapter(RobotAdapter):
                         **target,
                         "command": "custom_area",
                         "params": {
-                            "coordinates": ",".join(str(int(c)) for c in params["coordinates"]),
+                            "coordinates": [int(c) for c in params["coordinates"]],
                             "cleanings": params.get("cleanings", 1),
                         },
                     },

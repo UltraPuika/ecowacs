@@ -127,10 +127,22 @@ async def test_connects_discovers_and_controls(fake_ha):
         assert snap.model == "DEEBOT X9 PRO OMNI"
         assert snap.rooms[0].name == "Virtuve"
 
-        await adapter.send(CommandRequest(CommandName.CLEAN_ROOMS, {"rooms": ["3"], "cleanings": 1}))
+        # Room IDs must be sent as a LIST (a joined string is split per character
+        # by deebot-client, so "12" would become the two rooms 1 and 2).
+        await adapter.send(
+            CommandRequest(CommandName.CLEAN_ROOMS, {"rooms": ["12", "3"], "cleanings": 1})
+        )
         call = fake.service_calls[-1]
         assert call["domain"] == "vacuum" and call["service"] == "send_command"
-        assert call["service_data"]["params"] == {"rooms": "3", "cleanings": 1}
+        assert call["service_data"]["command"] == "spot_area"
+        assert call["service_data"]["params"] == {"rooms": [12, 3], "cleanings": 1}
+
+        await adapter.send(
+            CommandRequest(CommandName.CLEAN_ZONE, {"coordinates": [-10, 20, 300, 400], "cleanings": 1})
+        )
+        zone = fake.service_calls[-1]["service_data"]
+        assert zone["command"] == "custom_area"
+        assert zone["params"]["coordinates"] == [-10, 20, 300, 400]
 
         await fake.push_state("vacuum.robots", "cleaning", fake.states[0]["attributes"])
         await wait_until(lambda: adapter.snapshot.activity == Activity.CLEANING)
