@@ -11,6 +11,9 @@
 The robot's own voice is therefore whatever language the Ecovacs app offers.
 Latvian speech comes from **your speakers or phones**, through Home Assistant.
 
+Detailed investigation of the robot-side options, with evidence levels and the blocker, is in
+[voice-localization/RESEARCH.md](../voice-localization/RESEARCH.md).
+
 ## Free, local Latvian TTS: Piper
 
 [Piper](https://github.com/rhasspy/piper) runs on the Raspberry Pi with no cloud

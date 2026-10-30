@@ -1,0 +1,12 @@
+[
+  {"id": "cleaning_start",   "text": "Sāku tīrīšanu."},
+  {"id": "room_cleaning",    "text": "Uzsāku telpas tīrīšanu."},
+  {"id": "return_to_dock",   "text": "Atgriežos uz uzlādes staciju."},
+  {"id": "charging_start",   "text": "Sāku uzlādi."},
+  {"id": "cleaning_done",    "text": "Tīrīšana pabeigta."},
+  {"id": "check_water_tank", "text": "Lūdzu, pārbaudiet ūdens tvertni."},
+  {"id": "empty_dustbin",    "text": "Lūdzu, iztukšojiet putekļu tvertni."},
+  {"id": "dustbin_full",     "text": "Putekļu tvertne ir pilna."},
+  {"id": "stuck",            "text": "Esmu iestrēdzis."},
+  {"id": "need_help",        "text": "Man nepieciešama palīdzība."}
+]
