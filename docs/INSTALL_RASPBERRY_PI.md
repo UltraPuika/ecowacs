@@ -12,6 +12,7 @@ the Compose plugin. Every image used (`python:3.13-slim`, `node:24-alpine`,
 ## 1. Prerequisites
 
 - Home Assistant with the **Ecovacs** integration set up. See [HOME_ASSISTANT.md](HOME_ASSISTANT.md).
+  *Or* skip Home Assistant and use [direct mode](DIRECT_MODE.md) (no spoken announcements).
 - Docker on the Pi. If you run **Home Assistant OS**, the Pi has no general
   Docker host. In that case, run this app on another always-on Linux machine,
   or install HA as a container next to it.

@@ -194,7 +194,7 @@ export function Settings({ status, onLogout, authRequired }: {
           <NumberSetting key={s.key} setting={s} disabled={disabled} onSave={(v) => setSetting(s.key, v)} />
         ))}
         {settings.length === 0 && (
-          <p className="muted">Robots nav atsūtījis iestatījumus vai Home Assistant tās vienības ir izslēgtas.</p>
+          <p className="muted">Robots vēl nav atsūtījis iestatījumus vai tie šim modelim nav pieejami.</p>
         )}
         {robot.capabilities.empty_dustbin && (
           <BigButton
@@ -211,9 +211,18 @@ export function Settings({ status, onLogout, authRequired }: {
         </p>
       </Card>
 
-      <Card title="Paziņojumi latviski">
-        <Announcements />
-      </Card>
+      {robot.capabilities.announcements === false ? (
+        <Card title="Paziņojumi latviski">
+          <p className="muted" data-testid="no-announcements">
+            Paziņojumi latviski šeit nav pieejami, jo lietotne darbojas bez Home Assistant. Tiem vajag
+            skaļruni vai tālruņa paziņojumus, ko nodrošina Home Assistant.
+          </p>
+        </Card>
+      ) : (
+        <Card title="Paziņojumi latviski">
+          <Announcements />
+        </Card>
+      )}
 
       <Card title="Papildu">
         <BigButton label="Diagnostika un savienojums" variant="secondary" onClick={() => setShowDiag(true)} />

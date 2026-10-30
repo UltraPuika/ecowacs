@@ -60,7 +60,7 @@ class AppState:
         )
         self.history = HistoryTracker(storage, self.commands, adapter)
         self.announcer = Announcer(storage, adapter, self.commands)
-        self.event_log = EventLog(storage)
+        self.event_log = EventLog(storage, settings.link_name)
         self.sockets: set[WebSocket] = set()
         self.map_cache: tuple[float, bytes | None] | None = None
         self.map_lock = asyncio.Lock()
@@ -75,7 +75,9 @@ class AppState:
         snap = self.adapter.snapshot
         return {
             "robot": snap.to_dict(),
-            "freshness": freshness(snap, datetime.now(UTC), self.settings.stale_after),
+            "freshness": freshness(
+                snap, datetime.now(UTC), self.settings.stale_after, self.settings.link_name
+            ),
             "current_session": self.storage.current_session(),
             "server_time": datetime.now(UTC).isoformat(),
             "mode": self.settings.mode,

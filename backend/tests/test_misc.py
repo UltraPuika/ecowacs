@@ -141,3 +141,22 @@ async def test_demo_adapter_is_marked_and_works():
         assert render.carpet_found is True
     finally:
         await adapter.stop()
+
+
+def test_direct_mode_needs_no_home_assistant_settings():
+    s = Settings.from_env({"MODE": "direct", "APP_PASSWORD": "abcdef"})
+    assert s.mode == "direct" and s.link_name == "Ecovacs serveri"
+    assert Settings.from_env({"HA_URL": "http://h", "HA_TOKEN": "t", "AUTH_DISABLED": "1"}).link_name == "Home Assistant"
+
+
+def test_freshness_names_the_right_connection():
+    from datetime import UTC, datetime
+
+    from app.services import freshness
+    from tests.conftest import make_snapshot
+
+    snap = make_snapshot(backend_connected=False)
+    now = datetime.now(UTC)
+    assert "Home Assistant" in freshness(snap, now, 900)["reason"]
+    reason = freshness(snap, now, 900, "Ecovacs serveri")["reason"]
+    assert "Ecovacs serveri" in reason and "Home Assistant" not in reason

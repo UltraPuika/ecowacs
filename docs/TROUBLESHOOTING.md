@@ -5,6 +5,12 @@ connection state, the HA version, the discovered entities, entities that are
 disabled in HA, recent events and recent commands. **Lejupielādēt diagnostiku**
 exports all of it as JSON with secrets removed, so you can share it safely.
 
+## Direct mode (no Home Assistant)
+
+See the table of messages in [DIRECT_MODE.md](DIRECT_MODE.md#when-something-goes-wrong). The most common problems are a
+wrong country at login, a social-login account without a password, and an expired saved login
+(run `docker compose run --rm backend python -m app.ecovacs_login` again).
+
 ## The app does not open on the phone
 
 - The phone must be on the **same Wi-Fi** as the Pi. Mobile data will not work.

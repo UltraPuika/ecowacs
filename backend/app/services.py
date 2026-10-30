@@ -21,14 +21,16 @@ STUCK_CODES = frozenset({105, 408})
 LAST_START_WINDOW = 120.0  # seconds: a start command this recent explains a new session
 
 
-def freshness(snap: RobotSnapshot, now: datetime, stale_after: float) -> dict[str, Any]:
+def freshness(
+    snap: RobotSnapshot, now: datetime, stale_after: float, link_name: str = "Home Assistant"
+) -> dict[str, Any]:
     """Decide whether the shown data can be trusted as current."""
     age = (now - snap.last_update).total_seconds() if snap.last_update else None
     reason = None
     if snap.demo:
         pass
     elif not snap.backend_connected:
-        reason = "Nav savienojuma ar Home Assistant. Rādītie dati var būt novecojuši."
+        reason = f"Nav savienojuma ar {link_name}. Rādītie dati var būt novecojuši."
     elif not snap.robot_available:
         reason = "Nav savienojuma ar robotu. Rādītie dati var būt novecojuši."
     elif age is None:
@@ -54,13 +56,14 @@ def _recent_start(commands: CommandService) -> CommandRequest | None:
 class EventLog:
     """Records connection changes and robot errors in the event log."""
 
-    def __init__(self, storage: Storage) -> None:
+    def __init__(self, storage: Storage, link_name: str = "Home Assistant") -> None:
         self._storage = storage
+        self._link_name = link_name
 
     def on_snapshot(self, old: RobotSnapshot, new: RobotSnapshot) -> None:
         if old.backend_connected != new.backend_connected:
             if new.backend_connected:
-                self._storage.add_event("info", "connection", "Savienojums ar Home Assistant atjaunots.")
+                self._storage.add_event("info", "connection", f"Savienojums ar {self._link_name} atjaunots.")
             else:
                 self._storage.add_event(
                     "warning", "connection", new.connection_problem or "Savienojums pārtrūka."

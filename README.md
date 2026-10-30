@@ -67,6 +67,10 @@ lists the checks to do on your robot.
 
 Full steps: [docs/INSTALL_RASPBERRY_PI.md](docs/INSTALL_RASPBERRY_PI.md).
 
+**No Home Assistant?** Set `MODE=direct` and log in once with `docker compose run --rm backend python -m app.ecovacs_login`.
+The robot is still reached through the Ecovacs cloud (there is no IP/local connection), and spoken announcements are not
+available without Home Assistant. See [docs/DIRECT_MODE.md](docs/DIRECT_MODE.md).
+
 To try the app without a robot, set `MODE=demo` in `.env`. Everything shown is
 simulated and labelled "DEMO".
 
@@ -88,7 +92,7 @@ Latvian speech via Piper runs locally on the Pi.
 # backend (Python 3.12+)
 cd backend && python -m venv .venv && . .venv/bin/activate
 pip install -r requirements-dev.txt
-python -m pytest            # 93 tests, no robot or HA needed
+python -m pytest            # no robot or HA needed (direct-mode tests need Python 3.14 and skip otherwise)
 ruff check .
 MODE=demo AUTH_DISABLED=true DATA_DIR=./data uvicorn --factory app.main:build --port 8000
 
@@ -111,6 +115,7 @@ REAL_HA_URL=http://192.168.1.10:8123 REAL_HA_TOKEN=... python -m pytest -m reald
 - [Install on Raspberry Pi](docs/INSTALL_RASPBERRY_PI.md): install, update, Android PWA
 - [Android app (APK)](docs/ANDROID_APP.md): download, install, signing
 - [Home Assistant setup](docs/HOME_ASSISTANT.md)
+- [Direct mode (no Home Assistant)](docs/DIRECT_MODE.md)
 - [Map and carpet limitations](docs/MAP_AND_CARPET_LIMITATIONS.md)
 - [Latvian voice](docs/LATVIAN_VOICE.md)
 - [Troubleshooting](docs/TROUBLESHOOTING.md)

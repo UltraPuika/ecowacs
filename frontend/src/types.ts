@@ -73,7 +73,7 @@ export interface Status {
   freshness: { stale: boolean; reason: string | null; age_seconds: number | null };
   current_session: Session | null;
   server_time: string;
-  mode: "homeassistant" | "demo";
+  mode: "homeassistant" | "direct" | "demo";
 }
 
 export type CommandStatus = "confirmed" | "sent" | "done" | "failed" | "rejected";

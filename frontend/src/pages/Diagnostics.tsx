@@ -6,6 +6,12 @@ import type { CommandLog, LogEvent, Status } from "../types";
 
 type Diag = Record<string, unknown> & { adapter?: Record<string, unknown> };
 
+const MODE_LABEL: Record<Status["mode"], string> = {
+  homeassistant: "Home Assistant",
+  direct: "Tiešais savienojums ar Ecovacs (bez Home Assistant)",
+  demo: "DEMO (nav īsts robots)",
+};
+
 export function Diagnostics({ status, onBack }: { status: Status; onBack: () => void }) {
   const [diag, setDiag] = useState<Diag | null>(null);
   const [log, setLog] = useState<{ events: LogEvent[]; commands: CommandLog[] } | null>(null);
@@ -48,8 +54,9 @@ export function Diagnostics({ status, onBack }: { status: Status; onBack: () => 
       {error && <p className="feedback feedback-error">{error}</p>}
       <Card title="Savienojums">
         <dl className="kv">
-          <dt>Režīms</dt><dd>{status.mode === "demo" ? "DEMO (nav īsts robots)" : "Home Assistant"}</dd>
-          <dt>Home Assistant</dt><dd>{robot.backend_connected ? "savienots" : "nav savienojuma"}</dd>
+          <dt>Režīms</dt><dd>{MODE_LABEL[status.mode]}</dd>
+          <dt>{status.mode === "direct" ? "Ecovacs serveris" : "Home Assistant"}</dt>
+          <dd>{robot.backend_connected ? "savienots" : "nav savienojuma"}</dd>
           <dt>Robots</dt><dd>{robot.robot_available ? "sasniedzams" : "nav sasniedzams"}</dd>
           <dt>Pēdējā ziņa</dt><dd>{timeAgo(robot.last_update)} ({formatDateTime(robot.last_update)})</dd>
           <dt>Modelis</dt><dd>{robot.model ?? "nav zināms"}</dd>
@@ -57,6 +64,13 @@ export function Diagnostics({ status, onBack }: { status: Status; onBack: () => 
           {typeof a.ha_version === "string" && (<><dt>HA versija</dt><dd>{a.ha_version}</dd></>)}
           {typeof a.vacuum_entity === "string" && (<><dt>Robota vienība</dt><dd>{a.vacuum_entity}</dd></>)}
           {typeof a.discovery_problem === "string" && (<><dt>Atrašana</dt><dd>{a.discovery_problem}</dd></>)}
+          {typeof a.library === "string" && (<><dt>Bibliotēka</dt><dd>{a.library}</dd></>)}
+          {status.mode === "direct" && (
+            <>
+              <dt>Pieteikšanās saglabāta</dt>
+              <dd>{a.login_saved ? "jā" : "nē (palaidiet docker compose run --rm backend python -m app.ecovacs_login)"}</dd>
+            </>
+          )}
         </dl>
         {recommended.length > 0 && (
           <div className="feedback feedback-warn">
@@ -66,7 +80,11 @@ export function Diagnostics({ status, onBack }: { status: Status; onBack: () => 
           </div>
         )}
         <div className="button-row">
-          <BigButton label="Pārlasīt Home Assistant" variant="secondary" onClick={() => void rediscover()} />
+          <BigButton
+            label={status.mode === "direct" ? "Savienoties vēlreiz" : "Pārlasīt Home Assistant"}
+            variant="secondary"
+            onClick={() => void rediscover()}
+          />
           <a className="big-button big-secondary" href="/api/diagnostics/export" download>
             Lejupielādēt diagnostiku
           </a>
@@ -82,7 +100,7 @@ export function Diagnostics({ status, onBack }: { status: Status; onBack: () => 
         </ul>
       </Card>
 
-      {diag && (
+      {diag && a.entities !== undefined && (
         <Card title="Atrastās Home Assistant vienības">
           <pre className="pre">{JSON.stringify(a.entities ?? {}, null, 2)}</pre>
         </Card>

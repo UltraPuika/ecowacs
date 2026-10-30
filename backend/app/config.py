@@ -30,10 +30,11 @@ def _float(value: str | None, default: float) -> float:
 class Settings:
     """Application settings."""
 
-    mode: str = "homeassistant"  # "homeassistant" or "demo"
+    mode: str = "homeassistant"  # "homeassistant", "direct" (Ecovacs cloud, no HA) or "demo"
     ha_url: str = ""
     ha_token: str = field(default="", repr=False)
     ha_vacuum_entity: str = ""
+    ecovacs_device: str = ""
     app_password: str = field(default="", repr=False)
     auth_disabled: bool = False
     secret_key: str = field(default="", repr=False)
@@ -51,14 +52,15 @@ class Settings:
         """Create settings from environment variables."""
         env = dict(os.environ if env is None else env)
         mode = env.get("MODE", "homeassistant").strip().lower()
-        if mode not in {"homeassistant", "demo"}:
-            raise ConfigError("MODE must be 'homeassistant' or 'demo'")
+        if mode not in {"homeassistant", "direct", "demo"}:
+            raise ConfigError("MODE must be 'homeassistant', 'direct' or 'demo'")
 
         settings = cls(
             mode=mode,
             ha_url=env.get("HA_URL", "").strip().rstrip("/"),
             ha_token=env.get("HA_TOKEN", "").strip(),
             ha_vacuum_entity=env.get("HA_VACUUM_ENTITY", "").strip(),
+            ecovacs_device=env.get("ECOVACS_DEVICE", "").strip()[:100],
             app_password=env.get("APP_PASSWORD", ""),
             auth_disabled=_bool(env.get("AUTH_DISABLED")),
             secret_key=env.get("SECRET_KEY", "").strip(),
@@ -90,6 +92,11 @@ class Settings:
                 "APP_PASSWORD (at least 6 characters) is required, "
                 "or set AUTH_DISABLED=true explicitly"
             )
+
+    @property
+    def link_name(self) -> str:
+        """What the app is connected to, as shown in warnings (Latvian)."""
+        return "Ecovacs serveri" if self.mode == "direct" else "Home Assistant"
 
     @property
     def ha_ws_url(self) -> str:

@@ -46,6 +46,10 @@ instead of two, and our app never stores Ecovacs credentials. It needs only an
 HA long-lived access token. HA is needed for TTS announcements anyway. Using
 both methods would duplicate work without adding capability.
 
+**Update:** on request, a third mode (`MODE=direct`) was added that runs method A without Home Assistant.
+It uses the same library and has the same robot support; see [DIRECT_MODE.md](DIRECT_MODE.md). The
+Home Assistant mode remains the default.
+
 Cost of choosing B: anything the library supports but HA does **not** expose is
 unavailable to us. That covers cleaning-log images, raw virtual-wall coordinates
 and room polygons, unless the optional `ecovacs-map-data` companion is installed.
